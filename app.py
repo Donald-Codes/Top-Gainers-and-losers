@@ -60,49 +60,14 @@ def df_all_durations(durations=["1h", "24h", "7d"], top_coins=1000):
     return final_df
 
 
-# === FUNCTION 2: Search Token Data ===
-def get_token_data(token_id):
-    cache_key = f"token_{token_id}.pkl"
-    cached_data = load_cache(cache_key)
-
-    if cached_data is not None:
-        return cached_data
-
-    url = "https://pro-api.coingecko.com/api/v3/coins/markets"
-    params = {
-        "vs_currency": "usd",
-        "ids": token_id,
-        "order": "market_cap_desc",
-        "sparkline": False,
-        "price_change_percentage": "1h,24h,7d"
-    }
-    response = requests.get(url, params=params, headers=headers)
-    data = response.json()
-    df = pd.DataFrame(data)
-
-    save_cache(cache_key, df)
-    return df
-
-
-# === FUNCTION 3: Get all tokens for autocomplete ===
-@st.cache_data
-def get_all_tokens():
-    url = "https://pro-api.coingecko.com/api/v3/coins/list"
-    response = requests.get(url, headers=headers)
-    data = response.json()
-    tokens_df = pd.DataFrame(data)
-    tokens_df["name"] = tokens_df["name"] + " (" + tokens_df["symbol"].str.upper() + ")"
-    return tokens_df
-
-
 # === STREAMLIT APP ===
 st.set_page_config(page_title="Crypto Dashboard", layout="wide")
 
 st.title("📊 Crypto Dashboard")
-st.markdown("Track **Top Gainers/Losers** and **Any Token** from CoinGecko.")
+st.markdown("Track **Top Gainers/Losers** from CoinGecko.")
 
 # Tabs
-tab1, tab2 = st.tabs(["🔥 Top Gainers & Losers", "🔍 Token Search"])
+tab1, = st.tabs(["🔥 Top Gainers & Losers"])
 
 # === Tab 1: Gainers & Losers ===
 with tab1:
@@ -130,46 +95,3 @@ with tab1:
         st.plotly_chart(fig, use_container_width=True)
 
 
-# === Tab 2: Token Search ===
-with tab2:
-    st.subheader("🔍 Search Any Token")
-    tokens_df = get_all_tokens()
-
-    query = st.text_input("Type a token name or symbol (e.g. Bitcoin, ETH, Solana):", "Bitcoin", key="search_tab")
-    if query:
-        matches = tokens_df[tokens_df["name"].str.contains(query, case=False, na=False)]
-        if not matches.empty:
-            token_choice = st.selectbox("Select a token:", matches["name"])
-            token_id = matches[matches["name"] == token_choice]["id"].iloc[0]
-
-            token_df = get_token_data(token_id)
-            if not token_df.empty:
-                st.write("### Token Market Data")
-                st.dataframe(token_df[[  
-                    "id", "symbol", "current_price", "market_cap",
-                    "total_volume", "price_change_percentage_1h_in_currency",
-                    "price_change_percentage_24h_in_currency",
-                    "price_change_percentage_7d_in_currency"
-                ]])
-
-                # === Bar chart for price changes ===
-                price_changes = {
-                    "1h": token_df["price_change_percentage_1h_in_currency"].iloc[0],
-                    "24h": token_df["price_change_percentage_24h_in_currency"].iloc[0],
-                    "7d": token_df["price_change_percentage_7d_in_currency"].iloc[0],
-                }
-                price_df = pd.DataFrame({
-                    "Duration": list(price_changes.keys()),
-                    "Price Change (%)": list(price_changes.values())
-                })
-                fig3 = px.bar(
-                    price_df,
-                    x="Duration",
-                    y="Price Change (%)",
-                    color="Duration",
-                    title=f"{token_id.capitalize()} Price Change (%) Over Different Durations",
-                    text="Price Change (%)"
-                )
-                fig3.update_traces(texttemplate="%{text:.2f}%", textposition="outside")
-                fig3.update_layout(yaxis_title="Price Change (%)", xaxis_title="Duration")
-                st.plotly_chart(fig3, use_container_width=True)
