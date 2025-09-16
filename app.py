@@ -153,18 +153,24 @@ with tab2:
                     "price_change_percentage_7d_in_currency"
                 ]])
 
-                # === Add Bar Chart for % changes ===
-                st.write("### Price Change Overview")
-                changes = {
+                # === Bar chart for price changes ===
+                price_changes = {
                     "1h": token_df["price_change_percentage_1h_in_currency"].iloc[0],
                     "24h": token_df["price_change_percentage_24h_in_currency"].iloc[0],
                     "7d": token_df["price_change_percentage_7d_in_currency"].iloc[0],
                 }
-
-                fig, ax = plt.subplots()
-                ax.bar(changes.keys(), changes.values(), color=["#1f77b4", "#ff7f0e", "#2ca02c"])
-                ax.axhline(0, color="gray", linewidth=0.8)
-                ax.set_ylabel("Price Change (%)")
-                ax.set_title(f"{token_choice} Price Change (1h / 24h / 7d)")
-
-                st.pyplot(fig)
+                price_df = pd.DataFrame({
+                    "Duration": list(price_changes.keys()),
+                    "Price Change (%)": list(price_changes.values())
+                })
+                fig3 = px.bar(
+                    price_df,
+                    x="Duration",
+                    y="Price Change (%)",
+                    color="Duration",
+                    title=f"{token_id.capitalize()} Price Change (%) Over Different Durations",
+                    text="Price Change (%)"
+                )
+                fig3.update_traces(texttemplate="%{text:.2f}%", textposition="outside")
+                fig3.update_layout(yaxis_title="Price Change (%)", xaxis_title="Duration")
+                st.plotly_chart(fig3, use_container_width=True)
