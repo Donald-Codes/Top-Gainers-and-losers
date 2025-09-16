@@ -89,10 +89,30 @@ def get_token_data(token_id):
 def get_all_tokens():
     url = "https://pro-api.coingecko.com/api/v3/coins/list"
     response = requests.get(url, headers=headers)
+    
+    # Handle bad responses
+    if response.status_code != 200:
+        st.error(f"❌ Error fetching tokens: {response.status_code}")
+        return pd.DataFrame()
+
     data = response.json()
+    
+    # Ensure response contains a list of tokens
+    if not isinstance(data, list) or len(data) == 0:
+        st.error("❌ Unexpected response format from API.")
+        return pd.DataFrame()
+
     tokens_df = pd.DataFrame(data)
-    tokens_df["search_name"] = tokens_df["name"] + " (" + tokens_df["symbol"].str.upper() + ")"
+
+    # Check required columns exist
+    if not {"id", "name", "symbol"}.issubset(tokens_df.columns):
+        st.error("❌ API response missing expected fields (id, name, symbol).")
+        return pd.DataFrame()
+
+    # Build search name safely
+    tokens_df["search_name"] = tokens_df["name"].fillna("") + " (" + tokens_df["symbol"].str.upper().fillna("") + ")"
     return tokens_df
+
 
 
 # === STREAMLIT APP ===
