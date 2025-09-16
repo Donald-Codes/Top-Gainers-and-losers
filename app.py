@@ -2,7 +2,6 @@ import os
 import requests
 import pandas as pd
 import streamlit as st
-import matplotlib.pyplot as plt
 import plotly.express as px
 from dotenv import load_dotenv
 import joblib
