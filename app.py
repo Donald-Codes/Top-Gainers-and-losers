@@ -89,30 +89,10 @@ def get_token_data(token_id):
 def get_all_tokens():
     url = "https://pro-api.coingecko.com/api/v3/coins/list"
     response = requests.get(url, headers=headers)
-    
-    # Handle bad responses
-    if response.status_code != 200:
-        st.error(f"❌ Error fetching tokens: {response.status_code}")
-        return pd.DataFrame()
-
     data = response.json()
-    
-    # Ensure response contains a list of tokens
-    if not isinstance(data, list) or len(data) == 0:
-        st.error("❌ Unexpected response format from API.")
-        return pd.DataFrame()
-
     tokens_df = pd.DataFrame(data)
-
-    # Check required columns exist
-    if not {"id", "name", "symbol"}.issubset(tokens_df.columns):
-        st.error("❌ API response missing expected fields (id, name, symbol).")
-        return pd.DataFrame()
-
-    # Build search name safely
-    tokens_df["search_name"] = tokens_df["name"].fillna("") + " (" + tokens_df["symbol"].str.upper().fillna("") + ")"
+    tokens_df["name"] = tokens_df["name"] + " (" + tokens_df["symbol"].str.upper() + ")"
     return tokens_df
-
 
 
 # === STREAMLIT APP ===
@@ -157,10 +137,10 @@ with tab2:
 
     query = st.text_input("Type a token name or symbol (e.g. Bitcoin, ETH, Solana):", "Bitcoin", key="search_tab")
     if query:
-        matches = tokens_df[tokens_df["search_name"].str.contains(query, case=False, na=False)]
+        matches = tokens_df[tokens_df["name"].str.contains(query, case=False, na=False)]
         if not matches.empty:
-            token_choice = st.selectbox("Select a token:", matches["search_name"])
-            token_id = matches[matches["search_name"] == token_choice]["id"].iloc[0]
+            token_choice = st.selectbox("Select a token:", matches["name"])
+            token_id = matches[matches["name"] == token_choice]["id"].iloc[0]
 
             token_df = get_token_data(token_id)
             if not token_df.empty:
