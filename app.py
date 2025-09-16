@@ -2,6 +2,7 @@ import os
 import requests
 import pandas as pd
 import streamlit as st
+import matplotlib.pyplot as plt
 import plotly.express as px
 from dotenv import load_dotenv
 import joblib
@@ -135,7 +136,7 @@ with tab2:
     st.subheader("🔍 Search Any Token")
     tokens_df = get_all_tokens()
 
-    query = st.text_input("Type a token name or symbol (e.g. Bitcoin, ETH, Solana):", "Bitcoin")
+    query = st.text_input("Type a token name or symbol (e.g. Bitcoin, ETH, Solana):", "Bitcoin", key="search_tab")
     if query:
         matches = tokens_df[tokens_df["search_name"].str.contains(query, case=False, na=False)]
         if not matches.empty:
@@ -151,3 +152,19 @@ with tab2:
                     "price_change_percentage_24h_in_currency",
                     "price_change_percentage_7d_in_currency"
                 ]])
+
+                # === Add Bar Chart for % changes ===
+                st.write("### Price Change Overview")
+                changes = {
+                    "1h": token_df["price_change_percentage_1h_in_currency"].iloc[0],
+                    "24h": token_df["price_change_percentage_24h_in_currency"].iloc[0],
+                    "7d": token_df["price_change_percentage_7d_in_currency"].iloc[0],
+                }
+
+                fig, ax = plt.subplots()
+                ax.bar(changes.keys(), changes.values(), color=["#1f77b4", "#ff7f0e", "#2ca02c"])
+                ax.axhline(0, color="gray", linewidth=0.8)
+                ax.set_ylabel("Price Change (%)")
+                ax.set_title(f"{token_choice} Price Change (1h / 24h / 7d)")
+
+                st.pyplot(fig)
