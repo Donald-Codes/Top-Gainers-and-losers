@@ -16,7 +16,7 @@ CACHE_DIR = "cache"
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 # Helper: save/load cache
-def load_cache(filename, max_age=600):  # 600s = 10 minutes
+def load_cache(filename, max_age=60):  # 60s = 1 minute
     path = os.path.join(CACHE_DIR, filename)
     if os.path.exists(path):
         saved_time, data = joblib.load(path)
