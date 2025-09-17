@@ -29,7 +29,7 @@ def save_cache(filename, data):
 
 
 # === FUNCTION 1: Gainers/Losers Data ===
-def df_all_durations(durations=["1h", "24h", "7d"], top_coins=1000):
+def df_all_durations(durations=["24h", "7d"], top_coins=1000):
     cache_key = f"gainers_losers_{top_coins}.pkl"
     cached_data = load_cache(cache_key)
 
@@ -73,7 +73,7 @@ with tab1:
     df = df_all_durations()
 
     st.sidebar.markdown("## 🎛️ Filters (Gainers/Losers)")
-    duration = st.sidebar.selectbox("⏳ Select Duration", ["1h", "24h", "7d"])
+    duration = st.sidebar.selectbox("⏳ Select Duration", ["24h", "7d"])
     coin_type = st.sidebar.radio("📈 Select Type", ["gainer", "loser"], horizontal=True)
     top_n = st.sidebar.slider("🔝 Number of Coins to Display", 5, 20, 10)
 
@@ -81,7 +81,7 @@ with tab1:
     st.subheader(f"Top {coin_type.capitalize()}s ({duration})")
     st.dataframe(filtered_df, use_container_width=True)
 
-    change_col = {"1h": "usd_1h_change", "24h": "usd_24h_change", "7d": "usd_7d_change"}[duration]
+    change_col = {"24h": "usd_24h_change", "7d": "usd_7d_change"}[duration]
     if change_col in filtered_df.columns:
         top_coins = filtered_df.nlargest(top_n, change_col)
         fig = px.bar(
