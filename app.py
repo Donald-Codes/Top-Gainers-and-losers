@@ -8,8 +8,7 @@ import joblib
 import time
 
 # === SETUP ===
-load_dotenv()
-API_KEY = os.getenv("Coingecko_Api_Key")
+API_KEY = st.secrets["api"]["COINGECKO_API_KEY"]
 headers = {"x-cg-pro-api-key": API_KEY}
 
 CACHE_DIR = "cache"
