@@ -67,7 +67,7 @@ st.title("📊 Crypto Dashboard")
 st.markdown("Track **Top Gainers/Losers** from CoinGecko.")
 
 # Tabs
-tab1, = st.tabs(["🔥 Top Gainers & Losers"])
+tab1, = st.tabs(["🔥 Top Gainers & Losers"]) 
 
 # === Tab 1: Gainers & Losers ===
 with tab1:
